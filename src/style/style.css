@@ -1,0 +1,36 @@
+    .title {
+      font-size: clamp(2rem, 6vw, 3.5rem);    
+    }
+    .player1-text { color: #ff6b6b; }
+    .player2-text { color: #4d96ff; }
+    .status-bar { height: 44px; display: flex; align-items: center; justify-content: center; }
+    .turn-indicator { display: flex; align-items: center; }
+    .winner-player1 { color: #ff6b6b; text-shadow: 0 0 20px rgba(255,107,107,0.6); }
+    .winner-player2 { color: #4d96ff; text-shadow: 0 0 20px rgba(77,150,255,0.6); }
+    .winner-draw { color: #ffd93d; text-shadow: 0 0 20px rgba(255,217,61,0.6); }
+    .board-wrap {
+      border-radius: 24px;
+      padding: 16px;
+    }
+    .board { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+    .cell-wrap {
+      width: clamp(44px, 8vw, 68px); height: clamp(44px, 8vw, 68px);
+      border-radius: 50%;
+      background: rgba(0,0,0,0.45);
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .cell-wrap:hover { transform: scale(1.04); }
+    .piece { width: 82%; height: 82%; border-radius: 50%; position: relative; }
+    .piece-player1 {
+      background: radial-gradient(circle at 35% 35%, #ff4444);
+    }
+    .piece-player2 {
+      background: radial-gradient(circle at 35% 35%, #3377ff);
+    }
+    .piece-player1.win-piece { box-shadow: 0 0 24px #ff4444, 0 0 8px #ff4444; }
+    .piece-player2.win-piece { box-shadow: 0 0 24px #3377ff, 0 0 8px #3377ff; }
+    .piece.drop { animation: dropIn 0.3s cubic-bezier(0.34,1.4,0.64,1); }
+
+    .reset-btn:hover { background: rgba(255,255,255,0.13); color: red; border-color: rgba(255,255,255,0.3); transform: translateY(-1px); }
+    .reset-btn:active { transform: translateY(1px); }
