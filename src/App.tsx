@@ -2,11 +2,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Board, createBoard } from "./components/board";
 import "./style/style.css"
 import { Cell } from "./components/cell";
+import env from "react-dotenv";
+import { evalBoard } from "./components/ia";
+import { checkWinner } from "./components/game";
 
 
 export default function App() {
-  const COLUMNS = 7;
-  const ROWS = 6;
+  const COLUMNS = parseInt(env.COLUMNS!);
+  const ROWS = parseInt(env.ROWS!);
+  const CELL_SIZE = parseInt(env.CELL_SIZE!);
+  const GAP = parseInt(env.GAP!);
   const [board, setBoard] = useState<Board>(createBoard(ROWS, COLUMNS));
   const [current, setCurrent] = useState<"player1" | "player2">("player1");
   const [winner, setWinner] = useState<"player1" | "player2" | "draw" | null>(null);
@@ -14,13 +19,11 @@ export default function App() {
   const boardRef = useRef<HTMLDivElement>(null);
 
 
-  const CELL_SIZE = 68;
-  const GAP = 12;
 
   useEffect(() => {
     boardRef.current?.style.setProperty('grid-template-columns', `repeat(${COLUMNS}, ${CELL_SIZE}px)`)
     boardRef.current?.style.setProperty('gap', `${GAP}px`)
-
+    evalBoard(board);
   }, [])
 
   // Calculate drop animation: piece falls from top of board to targetRow
@@ -53,7 +56,7 @@ export default function App() {
     }
     if (row === -1) return;
 
-    setDroppingPiece({state:current, x: col, y: row});
+    setDroppingPiece({state:current, x: col, y: row, value: 0});
 
     const fallDistance = row + 1;
     const duration = 80 + fallDistance * 60;
@@ -63,9 +66,13 @@ export default function App() {
     
       setBoard(newBoard);
       setDroppingPiece(null);
-
-      setCurrent(current === "player1" ? "player2" : "player1");
-      
+      if (checkWinner(newBoard, row, col, current)) {
+        setWinner(current);
+      } else if (newBoard.every(row => row.every(cell => cell.state !== null))) {
+        setWinner("draw");
+      } else {
+        setCurrent(current === "player1" ? "player2" : "player1");
+      }
 
 
     }, duration);
@@ -76,6 +83,7 @@ export default function App() {
     setBoard(createBoard(ROWS, COLUMNS));
     setCurrent("player1");
     setDroppingPiece(null);
+    setWinner(null);
   };
 
     return (
@@ -84,9 +92,17 @@ export default function App() {
         <div className="title">Connect4</div>
 
         <div className="status-bar">
-          <div className="turn-indicator">
-            Player turn {current === "player1" ? "Red" : "Blue"}
-          </div>
+          {!winner ? (
+            <div className="turn-indicator">
+              Player turn {current === "player1" ? "Red" : "Blue"}
+            </div>)
+            : winner === "draw" ? (<div className={'winner-msg winner-draw'}>
+              Draw
+            </div>)
+            : (<div className={`winner-msg winner-p${winner}`}>
+              {winner} wins!
+            </div>)
+          }
         </div>
 
         <div className="board-wrap">          
