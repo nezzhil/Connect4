@@ -1,7 +1,8 @@
 import { Board } from "./board";
 import env from 'react-dotenv';
+import { Player } from "./player";
 
-function checkWinner(board: Board, row: number, col: number, player: "player1" | "player2"): boolean {
+function checkWinner(board: Board, row: number, col: number, player: Player): boolean {
   const directions = [[0,1],[1,0],[1,1],[1,-1]];
   for (const [dirRow, dirCol] of directions) {
     let count = 1;
@@ -21,4 +22,19 @@ function checkWinner(board: Board, row: number, col: number, player: "player1" |
   return false;
 }
 
-export {checkWinner}
+const player1: Player = {
+    Id: 1,
+    Description: "Player 1"
+};
+
+const player2: Player = {
+    Id: 2,
+    Description: "Player 2"
+};
+
+const draw: Player = {
+    Id: 0,
+    Description: "Draw"
+};
+
+export {checkWinner, player1, player2, draw}

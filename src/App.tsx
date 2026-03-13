@@ -3,8 +3,9 @@ import { Board, createBoard } from "./components/board";
 import "./style/style.css"
 import { Cell } from "./components/cell";
 import env from "react-dotenv";
-import { evalBoard } from "./components/ia";
-import { checkWinner } from "./components/game";
+import { evalBoard, getDropAI } from "./components/ai";
+import { checkWinner, draw, player1, player2 } from "./components/game";
+import { Player } from "./components/player";
 
 
 export default function App() {
@@ -13,9 +14,10 @@ export default function App() {
   const CELL_SIZE = parseInt(env.CELL_SIZE!);
   const GAP = parseInt(env.GAP!);
   const [board, setBoard] = useState<Board>(createBoard(ROWS, COLUMNS));
-  const [current, setCurrent] = useState<"player1" | "player2">("player1");
-  const [winner, setWinner] = useState<"player1" | "player2" | "draw" | null>(null);
+  const [current, setCurrent] = useState<Player>(player1);
+  const [winner, setWinner] = useState<Player | null>(null);
   const [droppingPiece, setDroppingPiece] = useState<Cell | null>(null);
+  const [ai, setAI] = useState<Boolean>(false);
   const boardRef = useRef<HTMLDivElement>(null);
 
 
@@ -25,6 +27,12 @@ export default function App() {
     boardRef.current?.style.setProperty('gap', `${GAP}px`)
     evalBoard(board);
   }, [])
+
+  useEffect(() => {
+    if(current === player2 && ai && droppingPiece == null) {
+      dropPiece(getDropAI(board));
+    }
+  }, [board, current, ai, droppingPiece])
 
   // Calculate drop animation: piece falls from top of board to targetRow
   const getDropStyle = (piece: Cell): React.CSSProperties => {
@@ -69,21 +77,25 @@ export default function App() {
       if (checkWinner(newBoard, row, col, current)) {
         setWinner(current);
       } else if (newBoard.every(row => row.every(cell => cell.state !== null))) {
-        setWinner("draw");
+        setWinner(draw);
       } else {
-        setCurrent(current === "player1" ? "player2" : "player1");
+        setCurrent(current === player1 ? player2 : player1);
       }
 
 
     }, duration);
 
-  }, [board, current, winner, droppingPiece]);
+  }, [board, current, winner, droppingPiece, ai]);
 
   const reset = () => {
     setBoard(createBoard(ROWS, COLUMNS));
-    setCurrent("player1");
+    setCurrent(player1);
     setDroppingPiece(null);
     setWinner(null);
+  };
+
+  const aiToggle = () => {
+    setAI(!ai);
   };
 
     return (
@@ -94,13 +106,13 @@ export default function App() {
         <div className="status-bar">
           {!winner ? (
             <div className="turn-indicator">
-              Player turn {current === "player1" ? "Red" : "Blue"}
+              Player turn {current === player1 ? "Red" : "Blue"}
             </div>)
-            : winner === "draw" ? (<div className={'winner-msg winner-draw'}>
+            : winner === draw ? (<div className={'winner-msg winner-draw'}>
               Draw
             </div>)
             : (<div className={`winner-msg winner-p${winner}`}>
-              {winner} wins!
+              {winner.Description} wins!
             </div>)
           }
         </div>
@@ -109,7 +121,7 @@ export default function App() {
           <div className="board" ref={boardRef}>
             {droppingPiece && (
               <div
-                className={`piece-${droppingPiece.state}`}
+                className={`piece-player${droppingPiece.state!.Id}`}
                 style={getDropStyle(droppingPiece)}
               />
             )}
@@ -123,7 +135,7 @@ export default function App() {
                     className="cell-wrap"
                     onClick={() => dropPiece(c)}
                   >{cell.state !== null && (
-                      <div className={`piece piece-${cell.state} } ${isDrop ? "drop" : ""}`} />
+                      <div className={`piece piece-player${cell.state.Id} } ${isDrop ? "drop" : ""}`} />
                     )}
                   </div>
                 );
@@ -133,6 +145,7 @@ export default function App() {
         </div>
 
         <button className="reset-btn" onClick={reset}>"START"</button>
+        <button className="aiToggle-btn" onClick={aiToggle}>{ai ? "Human" : "AI"}</button>
       </div>
     </>
     )

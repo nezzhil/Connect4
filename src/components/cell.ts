@@ -1,5 +1,7 @@
+import { Player } from "./player";
+
 type Cell = {
-    state: null | "player1" | "player2"
+    state: null | Player
     x: number,
     y: number,
     value: number
