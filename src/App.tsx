@@ -25,7 +25,6 @@ export default function App() {
   useEffect(() => {
     boardRef.current?.style.setProperty('grid-template-columns', `repeat(${COLUMNS}, ${CELL_SIZE}px)`)
     boardRef.current?.style.setProperty('gap', `${GAP}px`)
-    evalBoard(board);
   }, [])
 
   useEffect(() => {

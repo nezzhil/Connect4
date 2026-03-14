@@ -9,6 +9,7 @@
     "test": "react-dotenv && react-scripts test",
     "eject": "react-dotenv && react-scripts eject"
   },
+  "homepage": ".",
   "keywords": [],
   "author": "",
   "license": "ISC",

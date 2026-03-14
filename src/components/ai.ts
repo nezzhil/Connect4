@@ -39,7 +39,7 @@ function calculateScore(window: Cell[], player: Player) : number {
     if (countPlayer === 4)                     return  100 * posWeight;
     if (countPlayer === 3 && countEmpty === 1) return    5 * posWeight;
     if (countPlayer === 2 && countEmpty === 2) return    2 * posWeight;
-    if (countRival  === 3 && countEmpty === 1) return   -4 * posWeight;
+    if (countRival  === 3 && countEmpty === 1) return   -8 * posWeight;
     if (countRival  === 4)                     return -100 * posWeight;
 
     return 0;
@@ -66,7 +66,7 @@ function cellAvailable(board: Board, column: number): number {
 }
 
 function evaluate(board: Board, player: Player): number {
-
+    evalBoard(board);
     let score = 0;
     const directions = [[0,1],[1,0],[1,1],[1,-1]];
 
@@ -99,15 +99,15 @@ function evaluate(board: Board, player: Player): number {
     return score;
 };
 
-function alphaBeta(board: Board, depth: number, alpha: number, beta: number, isMax: boolean): number {
-    const stateP1 = checkState(board, player1);
-    const stateP2 = checkState(board, player2);
+function alphaBeta(board: Board, depth: number, alpha: number, beta: number, isMax: boolean, lastRow: number, lastCol: number): number {
+    const stateP1 = checkWinner(board, lastRow, lastCol, player1);
+    const stateP2 = checkWinner(board, lastRow, lastCol, player2);
 
-    if (stateP1.Win) {
-        return -1000;
+    if (isMax && stateP1) {
+        return -10000;
     }
-    if (stateP2.Win) {
-        return 1000;
+    if (!isMax && stateP2) {
+        return 10000;
     }
     if (board.every(row => row.every(cell => cell.state !== null))) {
         return 0;
@@ -122,7 +122,7 @@ function alphaBeta(board: Board, depth: number, alpha: number, beta: number, isM
         for(const col of columns) {
             const row = cellAvailable(board, col);
             board[row][col].state = player2;
-            value = Math.max(value, alphaBeta(board, depth-1, alpha, beta, false));
+            value = Math.max(value, alphaBeta(board, depth-1, alpha, beta, false, row, col));
             board[row][col].state = null;
             alpha = Math.max(alpha, value);
             if (beta <= alpha) {
@@ -136,7 +136,7 @@ function alphaBeta(board: Board, depth: number, alpha: number, beta: number, isM
         for(const col of columns) {
             const row = cellAvailable(board, col);
             board[row][col].state = player1;
-            value = Math.min(value, alphaBeta(board, depth-1, alpha, beta, true));
+            value = Math.min(value, alphaBeta(board, depth-1, alpha, beta, true, row, col));
             board[row][col].state = null;
             beta = Math.min(beta, value);
             if (beta <= alpha) {
@@ -154,7 +154,7 @@ function getDropAI(board: Board): number {
     for (const col of validColumns(board)) {
         const row = cellAvailable(board, col);
         board[row][col].state = player2;
-        const value = alphaBeta(board, 5, -Infinity, Infinity, false);
+        const value = alphaBeta(board, 5, -Infinity, Infinity, false, row, col);
         board[row][col].state = null;
         if (value > bestValue) {
             bestColumn = col;
@@ -173,6 +173,7 @@ function evalBoard(board: Board): Board {
         for (let col = 0; col < env.COLUMNS; col++) {
             board[row][col].x = row;
             board[row][col].y = col;
+            board[row][col].value = 0;
             for (const [dirRow, dirCol] of directions) {
                 const cells: Cell[] = [board[row][col]];
                 let r = row + dirRow;
