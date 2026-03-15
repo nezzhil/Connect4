@@ -4,30 +4,6 @@ import { Player } from "./player";
 import { Cell } from "./cell";
 import { checkWinner, player1, player2 } from "./game";
 
-type State = {
-    Player: Player | null
-    Win: boolean
-}
-
-function checkState(board: Board, player: Player): State {
-    var state: State = {
-        Player: player,
-        Win: false
-    };
-
-    for (let row = 0; row < env.ROWS; row++) {
-        for (let col = 0; col < env.COLUMNS; col++) {            
-            if (board[row][col].state !== player) continue;
-            if (checkWinner(board, row, col, player)) {
-                state.Win = true;
-                return state;
-            }
-        }
-    }
-
-    return state;
-}
-
 function calculateScore(window: Cell[], player: Player) : number {
     const rival = player === player1 ? player2 : player1;
     
@@ -150,6 +126,24 @@ function alphaBeta(board: Board, depth: number, alpha: number, beta: number, isM
 function getDropAI(board: Board): number {
     let bestColumn = -1;
     let bestValue = -Infinity;
+
+    //Check if one of the players is going to win, and avoid a bad strategy
+    for (const col of validColumns(board)) {
+        const row = cellAvailable(board, col);
+        
+        board[row][col].state = player2;
+        if(checkWinner(board, row, col, player2)) {
+            board[row][col].state = null;
+            return col;
+        }
+
+        board[row][col].state = player1;
+        if(checkWinner(board, row, col, player1)) {
+            board[row][col].state = null;
+            return col;
+        }
+        board[row][col].state = null;
+    }
 
     for (const col of validColumns(board)) {
         const row = cellAvailable(board, col);
